@@ -22,16 +22,13 @@ namespace ReadComPort
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static string com;
-        private static string nameDB = "database.db";
-        private static string connectionString = @"Data Source={nameDB}";
-        private static string queryCreateMainTable = "CREATE TABLE IF NOT EXISTS \"ComDatas\" " +
-            "(\"id\" INTEGER,\"date\" TEXT,\"comdata\"TEXT)";
+        private static string? com;
+        private static bool continueReadData;
         public MainWindow()
         {
             InitializeComponent();
+            Database.ExecuteQuery(Query.createMainTable);
             getPorts();
-            ReadComPort();
         }
         private void getPorts()
         {
@@ -42,7 +39,7 @@ namespace ReadComPort
             }
         }
 
-        private void ReadComPort()
+        private void StartReadData_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -54,16 +51,34 @@ namespace ReadComPort
                 _serialPort.Handshake = Handshake.None;
 
                 _serialPort.Open();
+
                 _serialPort.DataReceived += new SerialDataReceivedEventHandler(sp_DataReceived);
+                if (_serialPort.IsOpen)
+                {
+                    continueReadData = true;
+                    while (continueReadData)
+                    {
+                        try
+                        {
+                            string message = _serialPort.ReadLine();
+                            ;
+                        }
+                        catch (TimeoutException) 
+                        {
+
+                        }
+                    }
+                }
+
 
                 byte sent = 0x55;
                 //Console.WriteLine("sent: {0}", sent);
                 _serialPort.Write(new byte[1] { sent }, 0, 1);
 
             }
-            catch (Exception e)
+            catch (Exception excep)
             {
-                System.Windows.MessageBox.Show(e.ToString(), "MyProgram", MessageBoxButton.OK);//(MessageBoxImage)MessageBoxIcon.Information);
+                MessageBox.Show(excep.ToString(), "MyProgram", MessageBoxButton.OK);//(MessageBoxImage)MessageBoxIcon.Information);
             }
         }
         private static void sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -78,6 +93,11 @@ namespace ReadComPort
         {
             ComboBox comboBox = (ComboBox)sender;
             com = (string)comboBox.SelectedItem;
+        }
+
+        private void StopReadData_Click(object sender, RoutedEventArgs e)
+        {
+            continueReadData = false;
         }
     }
 }

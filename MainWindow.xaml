@@ -15,8 +15,12 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="385*"/>
         </Grid.RowDefinitions>
+        <Button x:Name="StartReadData" Click="StartReadData_Click" Grid.Column="0" Grid.Row="0" Content="Start"/>
+        <Button x:Name="StopReadData" Click="StopReadData_Click" Grid.Row="1" Content="Stop"/>
         <ComboBox x:Name="BoxComPorts" Grid.Column="2" SelectionChanged="BoxComPorts_SelectionChanged"/>
-        <DataGrid x:Name="dataGridPort" IsReadOnly="True" AutoGenerateColumns="False" Grid.Column="1" Grid.Row="1"/>
+        <DataGrid x:Name="dataGridPort" IsReadOnly="True" AutoGenerateColumns="False" Grid.Column="1" Grid.RowSpan="3"/>
     </Grid>
 </Window>
