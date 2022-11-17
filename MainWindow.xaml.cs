@@ -23,10 +23,10 @@ namespace ReadComPort
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static string? com;
-        private static bool continueReadData;
+        private static string? nameComPort = null;
+        //private static bool continueReadData = true;
 
-        private const int DataSize = 54; // размер данных в байтах
+        private const int DataSize = 54;    // размер данных в байтах
         private readonly byte[] _bufer = new byte[DataSize];
         private int _stepIndex;
         private bool _startRead;
@@ -35,9 +35,9 @@ namespace ReadComPort
         {
             InitializeComponent();
             Database.ExecuteQuery(Query.createMainTable);
-            getPorts();
+            GetPorts();
         }
-        private void getPorts()
+        private void GetPorts()
         {
             string[] ports = SerialPort.GetPortNames();
             for (int i = 0; i < ports.Length; ++i)
@@ -45,33 +45,33 @@ namespace ReadComPort
                 BoxComPorts.Items.Add(ports[i]);
             }
         }
-        private void StartReadData_Click(object sender, RoutedEventArgs e)
+
+        private void ReadDataCom()
         {
             try
             {
-                SerialPort port = new SerialPort("COM1",
-                                          2400,
-                                          Parity.None,
-                                          8,
-                                          StopBits.One);
-                port.Handshake = Handshake.None;
+                SerialPort serialPort = new(nameComPort,
+                                                          2400,
+                                                          Parity.None,
+                                                          8,
+                                                          StopBits.One);
+                serialPort.Handshake = Handshake.None;
 
-                port.Open();
+                serialPort.Open();
 
-                port.DataReceived += new SerialDataReceivedEventHandler(sp_DataReceived);
-                if (port.IsOpen)
+                serialPort.DataReceived += new SerialDataReceivedEventHandler(sp_DataReceived);
+                if (serialPort.IsOpen)
                 {
-                    continueReadData = true;
+                    //continueReadData = true;
                     try
                     {
-
                         //string message = _serialPort.ReadLine();
                         //  узнаем сколько байт пришло
-                        int buferSize = port.BytesToRead;
+                        int buferSize = serialPort.BytesToRead;
                         for (int i = 0; i < buferSize; ++i)
                         {
                             //  читаем по одному байту
-                            byte bt = (byte)port.ReadByte();
+                            byte bt = (byte)serialPort.ReadByte();
                             //  если встретили начало кадра (0xFF) - начинаем запись в _bufer
                             if (0xFF == bt)
                             {
@@ -99,20 +99,24 @@ namespace ReadComPort
                             }
                         }
                     }
-                    catch (TimeoutException)
-                    { }
-
+                    catch (TimeoutException){ }
                 }
 
                 byte sent = 0x55;
                 //Console.WriteLine("sent: {0}", sent);
-                port.Write(new byte[1] { sent }, 0, 1);
+                serialPort.Write(new byte[1] { sent }, 0, 1);
 
             }
             catch (Exception excep)
             {
                 MessageBox.Show(excep.ToString(), "MyProgram", MessageBoxButton.OK);//(MessageBoxImage)MessageBoxIcon.Information);
             }
+        }
+
+        private void StartReadData_Click(object sender, RoutedEventArgs e)
+        {
+            Thread readDataTread = new (ReadDataCom); // поток для фоновой работы
+            readDataTread.Start();
         }
         private static void sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
@@ -125,12 +129,12 @@ namespace ReadComPort
         private void BoxComPorts_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox comboBox = (ComboBox)sender;
-            com = (string)comboBox.SelectedItem;
+            nameComPort = (string)comboBox.SelectedItem;
         }
 
         private void StopReadData_Click(object sender, RoutedEventArgs e)
         {
-            continueReadData = false;
+            //continueReadData = false;
         }
     }
 }
