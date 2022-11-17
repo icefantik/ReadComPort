@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,6 +25,12 @@ namespace ReadComPort
     {
         private static string? com;
         private static bool continueReadData;
+
+        private const int DataSize = 54; // размер данных в байтах
+        private readonly byte[] _bufer = new byte[DataSize];
+        private int _stepIndex;
+        private bool _startRead;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -38,42 +45,68 @@ namespace ReadComPort
                 BoxComPorts.Items.Add(ports[i]);
             }
         }
-
         private void StartReadData_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                SerialPort _serialPort = new SerialPort("COM1",
+                SerialPort port = new SerialPort("COM1",
                                           2400,
                                           Parity.None,
                                           8,
                                           StopBits.One);
-                _serialPort.Handshake = Handshake.None;
+                port.Handshake = Handshake.None;
 
-                _serialPort.Open();
+                port.Open();
 
-                _serialPort.DataReceived += new SerialDataReceivedEventHandler(sp_DataReceived);
-                if (_serialPort.IsOpen)
+                port.DataReceived += new SerialDataReceivedEventHandler(sp_DataReceived);
+                if (port.IsOpen)
                 {
                     continueReadData = true;
-                    while (continueReadData)
+                    try
                     {
-                        try
-                        {
-                            string message = _serialPort.ReadLine();
-                            ;
-                        }
-                        catch (TimeoutException) 
-                        {
 
+                        //string message = _serialPort.ReadLine();
+                        //  узнаем сколько байт пришло
+                        int buferSize = port.BytesToRead;
+                        for (int i = 0; i < buferSize; ++i)
+                        {
+                            //  читаем по одному байту
+                            byte bt = (byte)port.ReadByte();
+                            //  если встретили начало кадра (0xFF) - начинаем запись в _bufer
+                            if (0xFF == bt)
+                            {
+                                _stepIndex = 0;
+                                _startRead = true;
+                                //  раскоментировать если надо сохранять этот байт
+                                //_bufer[_stepIndex] = bt;
+                                //++_stepIndex;
+                            }
+                            //  дописываем в буфер все остальное
+                            if (_startRead)
+                            {
+                                _bufer[_stepIndex] = bt;
+                                ++_stepIndex;
+                            }
+                            //  когда буфер наполнлся данными
+                            if (_stepIndex == DataSize && _startRead)
+                            {
+                                //  по идее тут должны быть все ваши данные.
+
+                                //  .. что то делаем ...
+                                //  var item = _bufer[7];
+
+                                _startRead = false;
+                            }
                         }
                     }
-                }
+                    catch (TimeoutException)
+                    { }
 
+                }
 
                 byte sent = 0x55;
                 //Console.WriteLine("sent: {0}", sent);
-                _serialPort.Write(new byte[1] { sent }, 0, 1);
+                port.Write(new byte[1] { sent }, 0, 1);
 
             }
             catch (Exception excep)
