@@ -24,9 +24,9 @@ namespace ReadComPort
     public partial class MainWindow : Window
     {
         private static string? nameComPort = null;
-        //private static bool continueReadData = true;
+        private static bool continueReadData = true;
 
-        private const int DataSize = 54;    // размер данных в байтах
+        private const int DataSize = 54; // размер данных в байтах
         private readonly byte[] _bufer = new byte[DataSize];
         private int _stepIndex;
         private bool _startRead;
@@ -50,6 +50,7 @@ namespace ReadComPort
         {
             try
             {
+                StringComparer stringComparer = StringComparer.OrdinalIgnoreCase;
                 SerialPort serialPort = new(nameComPort,
                                                           2400,
                                                           Parity.None,
@@ -62,42 +63,57 @@ namespace ReadComPort
                 serialPort.DataReceived += new SerialDataReceivedEventHandler(sp_DataReceived);
                 if (serialPort.IsOpen)
                 {
-                    //continueReadData = true;
+                    string message;
+                    continueReadData = true;
                     try
                     {
-                        //string message = _serialPort.ReadLine();
-                        //  узнаем сколько байт пришло
-                        int buferSize = serialPort.BytesToRead;
-                        for (int i = 0; i < buferSize; ++i)
+                        // Либо так читаем
+                        while (continueReadData)
                         {
-                            //  читаем по одному байту
-                            byte bt = (byte)serialPort.ReadByte();
-                            //  если встретили начало кадра (0xFF) - начинаем запись в _bufer
-                            if (0xFF == bt)
+                            message = serialPort.ReadLine();
+                            
+                            if (stringComparer.Equals("quit"))
                             {
-                                _stepIndex = 0;
-                                _startRead = true;
-                                //  раскоментировать если надо сохранять этот байт
-                                //_bufer[_stepIndex] = bt;
-                                //++_stepIndex;
+                                continueReadData = false;
                             }
-                            //  дописываем в буфер все остальное
-                            if (_startRead)
+                            else
                             {
-                                _bufer[_stepIndex] = bt;
-                                ++_stepIndex;
-                            }
-                            //  когда буфер наполнлся данными
-                            if (_stepIndex == DataSize && _startRead)
-                            {
-                                //  по идее тут должны быть все ваши данные.
-
-                                //  .. что то делаем ...
-                                //  var item = _bufer[7];
-
-                                _startRead = false;
+                                serialPort.WriteLine(String.Format("<{0}>: {1}", serialPort.PortName, message));
                             }
                         }
+                        //// либо так
+                        ////  узнаем сколько байт пришло
+                        //int buferSize = serialPort.BytesToRead;
+                        //for (int i = 0; i < buferSize; ++i)
+                        //{
+                        //    //  читаем по одному байту
+                        //    byte bt = (byte)serialPort.ReadByte();
+                        //    //  если встретили начало кадра (0xFF) - начинаем запись в _bufer
+                        //    if (0xFF == bt)
+                        //    {
+                        //        _stepIndex = 0;
+                        //        _startRead = true;
+                        //        //  раскоментировать если надо сохранять этот байт
+                        //        //_bufer[_stepIndex] = bt;
+                        //        //++_stepIndex;
+                        //    }
+                        //    //  дописываем в буфер все остальное
+                        //    if (_startRead)
+                        //    {
+                        //        _bufer[_stepIndex] = bt;
+                        //        ++_stepIndex;
+                        //    }
+                        //    //  когда буфер наполнлся данными
+                        //    if (_stepIndex == DataSize && _startRead)
+                        //    {
+                        //        //  по идее тут должны быть все ваши данные.
+
+                        //        //  .. что то делаем ...
+                        //        //  var item = _bufer[7];
+
+                        //        _startRead = false;
+                        //    }
+                        //}
                     }
                     catch (TimeoutException){ }
                 }

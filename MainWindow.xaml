@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ReadComPort"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800" ResizeMode="NoResize">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="100"/>
@@ -21,6 +21,6 @@
         <Button x:Name="StartReadData" Click="StartReadData_Click" Grid.Column="0" Grid.Row="0" Content="Start"/>
         <Button x:Name="StopReadData" Click="StopReadData_Click" Grid.Row="1" Content="Stop"/>
         <ComboBox x:Name="BoxComPorts" Grid.Column="2" SelectionChanged="BoxComPorts_SelectionChanged"/>
-        <DataGrid x:Name="dataGridPort" IsReadOnly="True" AutoGenerateColumns="False" Grid.Column="1" Grid.RowSpan="3"/>
+        <DataGrid x:Name="DataGridPort" IsReadOnly="True" AutoGenerateColumns="False" Grid.Column="1" Grid.RowSpan="3"/>
     </Grid>
 </Window>
