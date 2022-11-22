@@ -63,15 +63,24 @@ namespace ReadComPort
                 serialPort.DataReceived += new SerialDataReceivedEventHandler(sp_DataReceived);
                 if (serialPort.IsOpen)
                 {
-                    string message;
+                    string message, dateTime;
                     continueReadData = true;
                     try
                     {
+                        var a = serialPort.ReadExisting;
                         // Либо так читаем
                         while (continueReadData)
                         {
                             message = serialPort.ReadLine();
-                            
+                            dateTime = DateTime.Now.ToString();
+                            if (message != null)
+                            {
+                                Database.ExecuteQuery(string.Format(Query.insertData, dateTime, message));
+                                DComPort dComPort = new DComPort(dateTime, message, serialPort.PortName);
+                                
+                                //DataGridPort.ItemsSource = dComPort;
+                                //break;
+                            }
                             if (stringComparer.Equals("quit"))
                             {
                                 continueReadData = false;

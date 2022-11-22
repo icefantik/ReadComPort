@@ -6,9 +6,16 @@ using System.Threading.Tasks;
 
 namespace ReadComPort
 {
-    internal class DComPort
+    public class DComPort
     {
-        public static string? date;
-        public static string? data;
+        private string? date;
+        private string? data;
+        private string? comname;
+        public DComPort(string date, string data, string? comname)
+        {
+            this.date = date;
+            this.data = data;
+            this.comname = comname;
+        }
     }
 }
