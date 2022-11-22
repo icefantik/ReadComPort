@@ -10,9 +10,14 @@ namespace ReadComPort
 {
     internal class ReadCom
     {
-        public static string? nameComPort;
-        public static bool continueReadData;
-        private void ReadDataCom()
+        public static string? nameComPort = null;
+        public static bool continueReadData = true;
+
+        private const int DataSize = 54; // размер данных в байтах
+        private readonly byte[] _bufer = new byte[DataSize];
+        private int _stepIndex;
+        private bool _startRead;
+        public static void ReadDataCom()
         {
             try
             {
