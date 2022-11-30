@@ -9,12 +9,12 @@ namespace ReadComPort
     public class DComPort
     {
         private string? date;
-        private string? data;
+        private string? comdata;
         private string? comname;
         public DComPort(string date, string data, string? comname)
         {
             this.date = date;
-            this.data = data;
+            this.comdata = data;
             this.comname = comname;
         }
     }

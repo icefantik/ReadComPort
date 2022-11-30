@@ -42,7 +42,7 @@ namespace ReadComPort
                         // Либо так читаем
                         while (continueReadData)
                         {
-                            message = serialPort.ReadLine();
+                            message = "";// serialPort.ReadLine();
                             dateTime = DateTime.Now.ToString();
                             if (message != null)
                             {
